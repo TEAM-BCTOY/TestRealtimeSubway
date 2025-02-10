@@ -23,10 +23,10 @@ class ApiSelectorViewModel : ViewModel() {
     val realtimePosition: StateFlow<List<RealtimePosition>> get() = _realtimePositionList
 
     // 지하철 실시간 도착정보 API 호출
-    fun callRealtimeSubwayArrival() {
+    fun callRealtimeSubwayArrival(stationName: String) {
         _realtimeArrivalList.value = emptyList()
         _realtimePositionList.value = emptyList()
-        NetworkClient.getApiInstance().getRealtimeSubwayArrivalInfo(0, 10, "강남구청").enqueue(object : Callback<ResponseRealtimeStationArrival> {
+        NetworkClient.getApiInstance().getRealtimeSubwayArrivalInfo(0, 10, stationName).enqueue(object : Callback<ResponseRealtimeStationArrival> {
             override fun onResponse(
                 call: Call<ResponseRealtimeStationArrival>,
                 response: Response<ResponseRealtimeStationArrival>
@@ -51,10 +51,10 @@ class ApiSelectorViewModel : ViewModel() {
     }
 
     // 실시간 열차 위치정보 API 호출
-    fun callRealtimePosition() {
+    fun callRealtimePosition(subwayLineName: String) {
         _realtimeArrivalList.value = emptyList()
         _realtimePositionList.value = emptyList()
-        NetworkClient.getApiInstance().getRealtimePositionInfo(0, 10, "7호선").enqueue(object : Callback<ResponseRealtimePosition> {
+        NetworkClient.getApiInstance().getRealtimePositionInfo(0, 10, subwayLineName).enqueue(object : Callback<ResponseRealtimePosition> {
             override fun onResponse(
                 call: Call<ResponseRealtimePosition>,
                 response: Response<ResponseRealtimePosition>

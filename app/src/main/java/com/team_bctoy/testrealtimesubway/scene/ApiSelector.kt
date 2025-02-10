@@ -13,9 +13,13 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -30,6 +34,7 @@ import com.team_bctoy.testrealtimesubway.api.data.RealtimeArrivalInfo
 import com.team_bctoy.testrealtimesubway.api.data.toInfo
 import com.team_bctoy.testrealtimesubway.api.data.toInfoString
 import com.team_bctoy.testrealtimesubway.ui.theme.TestRealtimeSubwayTheme
+import com.team_bctoy.testrealtimesubway.utils.LogUtil
 
 @Composable
 fun ApiSelector(
@@ -38,7 +43,8 @@ fun ApiSelector(
     val apiViewModel: ApiSelectorViewModel = viewModel()
     val realtimeArrivalList by apiViewModel.realtimeArrival.collectAsState()
     val realtimePosition by apiViewModel.realtimePosition.collectAsState()
-    val resultTextScroll = rememberScrollState(0)
+    var inputSubwayName by remember { mutableStateOf("") }
+    var inputSubwayLineName by remember { mutableStateOf("") }
 
     Column(
         modifier = modifier
@@ -81,24 +87,51 @@ fun ApiSelector(
             horizontalArrangement = Arrangement.Absolute.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            DefaultButton(
-                onClick = {
-                    apiViewModel.callRealtimeSubwayArrival()
-                },
-                buttonText = "실시간\n도착정보",
+            Column(
                 modifier = Modifier
                     .weight(1f)
                     .padding(4.dp)
-            )
-            DefaultButton(
-                onClick = {
-                    apiViewModel.callRealtimePosition()
-                },
-                buttonText = "실시간 열차\n위치정보",
+            ) {
+                TextField(
+                    value = inputSubwayName,
+                    onValueChange = {
+                        inputSubwayName = it
+                    },
+                    label = {
+                        Text(text = "역이름 입력")
+                    },
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+                DefaultButton(
+                    onClick = {
+                        apiViewModel.callRealtimeSubwayArrival(inputSubwayName)
+                    },
+                    buttonText = "실시간\n도착정보",
+                )
+            }
+            Column(
                 modifier = Modifier
                     .weight(1f)
                     .padding(4.dp)
-            )
+            ) {
+                TextField(
+                    value = inputSubwayLineName,
+                    onValueChange = {
+                        inputSubwayLineName = it
+                    },
+                    label = {
+                        Text(text = "호선 입력")
+                    },
+                    modifier = Modifier.padding(bottom = 4.dp)
+                )
+
+                DefaultButton(
+                    onClick = {
+                        apiViewModel.callRealtimePosition(inputSubwayLineName)
+                    },
+                    buttonText = "실시간 열차\n위치정보",
+                )
+            }
             DefaultButton(
                 onClick = {
                     apiViewModel.callRealtimeArrivalAll()

@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
@@ -13,6 +15,14 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
+
+        // local.properties 가져오기
+        val localPropFiles = project.rootProject.file("local.properties")
+        val properties = Properties()
+        properties.load(localPropFiles.inputStream())
+
+        val authorizationKey = properties.getProperty("AuthorizationKey")
+        buildConfigField("String", "AUTH_KEY", authorizationKey)
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -60,6 +70,20 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+
+    // Retrofit
+    implementation(libs.retrofit)
+    // Retrofit with Scalar Converter
+    implementation(libs.converter.scalars)
+    implementation(libs.converter.gson)
+
+    // For OkHttp
+    implementation(platform(libs.okhttp.bom))
+    // define any required OkHttp artifacts without version
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

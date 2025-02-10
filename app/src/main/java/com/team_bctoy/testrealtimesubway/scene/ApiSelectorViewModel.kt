@@ -26,7 +26,7 @@ class ApiSelectorViewModel : ViewModel() {
     fun callRealtimeSubwayArrival() {
         _realtimeArrivalList.value = emptyList()
         _realtimePositionList.value = emptyList()
-        NetworkClient.getApiInstance().getRealtimeSubwayArrivalInfo(0, 10, "철산").enqueue(object : Callback<ResponseRealtimeStationArrival> {
+        NetworkClient.getApiInstance().getRealtimeSubwayArrivalInfo(0, 10, "부천").enqueue(object : Callback<ResponseRealtimeStationArrival> {
             override fun onResponse(
                 call: Call<ResponseRealtimeStationArrival>,
                 response: Response<ResponseRealtimeStationArrival>
@@ -79,7 +79,7 @@ class ApiSelectorViewModel : ViewModel() {
     }
 
     // 지하철 실시간 도착정보 일괄 API 호출
-    fun fetchApi3() {
+    fun callRealtimeArrivalAll() {
         _realtimeArrivalList.value = emptyList()
         _realtimePositionList.value = emptyList()
         NetworkClient.getApiInstance().getRealtimePositionAllInfo().enqueue(object : Callback<ResponseRealtimeStationArrival> {

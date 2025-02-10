@@ -1,13 +1,16 @@
 package com.team_bctoy.testrealtimesubway.scene
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -23,6 +26,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.team_bctoy.testrealtimesubway.api.data.RealtimeArrivalInfo
+import com.team_bctoy.testrealtimesubway.api.data.toInfo
+import com.team_bctoy.testrealtimesubway.api.data.toInfoString
 import com.team_bctoy.testrealtimesubway.ui.theme.TestRealtimeSubwayTheme
 
 @Composable
@@ -95,7 +101,7 @@ fun ApiSelector(
             )
             DefaultButton(
                 onClick = {
-                    apiViewModel.fetchApi3()
+                    apiViewModel.callRealtimeArrivalAll()
                 },
                 buttonText = "실시간\n도착정보\n(일괄)",
                 modifier = Modifier
@@ -103,16 +109,32 @@ fun ApiSelector(
                     .padding(4.dp)
             )
         }
-
-        ResultText(
-            text = if(realtimeArrivalList.isNotEmpty()) realtimeArrivalList.joinToString { it.toString() }
-                    else realtimePosition.joinToString { it.toString() },
-            modifier = Modifier
-                .padding(16.dp)
-                .weight(1f)
-                .fillMaxWidth()
-                .verticalScroll(resultTextScroll)
-        )
+        if(realtimeArrivalList.isNotEmpty()) {
+            LazyColumn(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                items(realtimeArrivalList) { item ->
+                    TrackingTrain(info = item.toInfo())
+                }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .weight(1f)
+                    .fillMaxWidth(),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                items(realtimePosition) { item ->
+                    Text(
+                        text = item.toInfoString()
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -134,11 +156,51 @@ fun DefaultButton(
 }
 
 @Composable
-fun ResultText(
+fun TrackingTrain(
     modifier: Modifier = Modifier,
-    text: String
+    info: RealtimeArrivalInfo
 ) {
-    Text(modifier = modifier, text = text, textAlign = TextAlign.Center)
+    with(info) {
+        Column(
+            modifier = modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "$destination 행 $trainKind 열차",
+                fontWeight = FontWeight.Bold,
+                fontSize = 24.sp,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
+            Box(
+                modifier = Modifier
+                    .background(Color.Cyan)
+                    .padding(24.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(
+                        text = beforeInfo,
+                        fontWeight = FontWeight.Bold
+                    )
+                    if(isLast) {
+                        Text(
+                            text = "막차입니다!!",
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            color = Color.Red,
+                        )
+                    }
+                }
+            }
+            Text(
+                text = arrivalCode,
+                modifier = Modifier.padding(8.dp)
+            )
+        }
+    }
 }
 
 @Preview(showBackground = true)
@@ -147,4 +209,34 @@ fun PreviewApiSelector() {
     TestRealtimeSubwayTheme {
         ApiSelector()
     }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewTrackingTrainIsLast() {
+    val mock = RealtimeArrivalInfo(
+        searchStation = "부천",
+        destination = "의정부",
+        trainKind = "일반",
+        beforeInfo = "[3]번째 전역",
+        nowSubwayStationName = "부개",
+        arrivalCode = "운행중",
+        isLast = true
+    )
+    TrackingTrain(info = mock)
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewTrackingTrainIsNotLast() {
+    val mock = RealtimeArrivalInfo(
+        searchStation = "부천",
+        destination = "의정부",
+        trainKind = "일반",
+        beforeInfo = "[3]번째 전역",
+        nowSubwayStationName = "부개",
+        arrivalCode = "운행중",
+        isLast = false
+    )
+    TrackingTrain(info = mock)
 }

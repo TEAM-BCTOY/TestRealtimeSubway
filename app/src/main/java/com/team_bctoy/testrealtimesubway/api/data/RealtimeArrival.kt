@@ -70,7 +70,8 @@ data class RealtimeArrival(
 
 data class RealtimeArrivalInfo(
     val searchStation: String,
-    val destination: String,
+    val upAndDown: String, // 상하행 구분
+    val destinationAndDirection: String, //
     val trainKind: String,
     val beforeInfo: String,
     val nowSubwayStationName: String,
@@ -81,7 +82,8 @@ data class RealtimeArrivalInfo(
 fun RealtimeArrival.toInfo() : RealtimeArrivalInfo {
     return RealtimeArrivalInfo(
         searchStation = this.statnNm, // 조회한 역
-        destination = this.bstatnNm, // 종착역
+        upAndDown = this.updnLine,
+        destinationAndDirection = this.trainLineNm, // 종착역 과 방면
         trainKind = this.btrainSttus, // 열차 종류
         beforeInfo =  this.arvlMsg2.split("(")[0], // 몇번째 전인지
         nowSubwayStationName = this.arvlMsg3, // 현재 지하철이 어디있는지

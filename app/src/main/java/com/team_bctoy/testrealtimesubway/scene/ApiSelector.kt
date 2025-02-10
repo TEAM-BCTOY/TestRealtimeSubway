@@ -167,7 +167,7 @@ fun TrackingTrain(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(
-                text = "$destination 행 $trainKind 열차",
+                text = "$destinationAndDirection $trainKind 열차",
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp,
                 modifier = Modifier.padding(bottom = 16.dp)
@@ -216,7 +216,8 @@ fun PreviewApiSelector() {
 fun PreviewTrackingTrainIsLast() {
     val mock = RealtimeArrivalInfo(
         searchStation = "부천",
-        destination = "의정부",
+        upAndDown = "상행",
+        destinationAndDirection = "의정부 - 소사방면",
         trainKind = "일반",
         beforeInfo = "[3]번째 전역",
         nowSubwayStationName = "부개",
@@ -231,7 +232,8 @@ fun PreviewTrackingTrainIsLast() {
 fun PreviewTrackingTrainIsNotLast() {
     val mock = RealtimeArrivalInfo(
         searchStation = "부천",
-        destination = "의정부",
+        upAndDown = "상행",
+        destinationAndDirection = "의정부 - 소사방면",
         trainKind = "일반",
         beforeInfo = "[3]번째 전역",
         nowSubwayStationName = "부개",

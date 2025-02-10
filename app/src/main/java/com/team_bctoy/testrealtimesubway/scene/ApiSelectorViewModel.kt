@@ -26,7 +26,7 @@ class ApiSelectorViewModel : ViewModel() {
     fun callRealtimeSubwayArrival() {
         _realtimeArrivalList.value = emptyList()
         _realtimePositionList.value = emptyList()
-        NetworkClient.getApiInstance().getRealtimeSubwayArrivalInfo(0, 10, "부천").enqueue(object : Callback<ResponseRealtimeStationArrival> {
+        NetworkClient.getApiInstance().getRealtimeSubwayArrivalInfo(0, 10, "강남구청").enqueue(object : Callback<ResponseRealtimeStationArrival> {
             override fun onResponse(
                 call: Call<ResponseRealtimeStationArrival>,
                 response: Response<ResponseRealtimeStationArrival>

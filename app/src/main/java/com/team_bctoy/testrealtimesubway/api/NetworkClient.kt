@@ -49,4 +49,19 @@ object NetworkClient {
     fun getApiInstance() : NetworkInterface {
         return retrofit.create(NetworkInterface::class.java)
     }
+
+    private val testApiClient = OkHttpClient().newBuilder()
+        .addNetworkInterceptor(interceptor)
+        .build()
+
+    private val testRetrofit = Retrofit.Builder()
+        .baseUrl("http://jitb.synology.me:6000/api/")
+        .addConverterFactory(GsonConverterFactory.create())
+        .client(testApiClient)
+        .build()
+
+    fun getSpringApiInstance() : NetworkInterface {
+        return testRetrofit.create(NetworkInterface::class.java)
+    }
+
 }

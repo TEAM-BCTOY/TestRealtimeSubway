@@ -1,5 +1,8 @@
 package com.team_bctoy.testrealtimesubway.api.data
 
+import com.team_bctoy.testrealtimesubway.scene.RealtimeArrivalInfo
+import com.team_bctoy.testrealtimesubway.utils.toArrivalCode
+
 /**
  * 실시간 도착정보 Response Data
 * @property [totalCount]
@@ -68,17 +71,6 @@ data class RealtimeArrival(
     val trainCo: Any?
 )
 
-data class RealtimeArrivalInfo(
-    val searchStation: String,
-    val upAndDown: String, // 상하행 구분
-    val destinationAndDirection: String, //
-    val trainKind: String,
-    val beforeInfo: String,
-    val nowSubwayStationName: String,
-    val arrivalCode: String,
-    val isLast: Boolean,
-)
-
 fun RealtimeArrival.toInfo() : RealtimeArrivalInfo {
     return RealtimeArrivalInfo(
         searchStation = this.statnNm, // 조회한 역
@@ -90,17 +82,4 @@ fun RealtimeArrival.toInfo() : RealtimeArrivalInfo {
         arrivalCode = this.arvlCd.toArrivalCode(this.statnNm), // 도착 코드
         isLast = this.lstcarAt.toBoolean() // 막차일때는 1 - true
     )
-}
-
-fun String.toArrivalCode(searchStation: String) : String {
-    return when(this) {
-        "0" -> "$searchStation 역 진입중"
-        "1" -> "$searchStation 역 도착"
-        "2" -> "$searchStation 역 출발"
-        "3" -> "전역 출발"
-        "4" -> "전역 진입"
-        "5" -> "전역 도착"
-        "99" -> "운행중"
-        else -> ""
-    }
 }

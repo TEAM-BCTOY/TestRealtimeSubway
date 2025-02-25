@@ -2,6 +2,7 @@ package com.team_bctoy.testrealtimesubway.api
 
 import com.team_bctoy.testrealtimesubway.api.data.ResponseRealtimePosition
 import com.team_bctoy.testrealtimesubway.api.data.ResponseRealtimeStationArrival
+import com.team_bctoy.testrealtimesubway.api.data.ResponseSpringArrivalInfoToStationName
 import retrofit2.Call
 import retrofit2.http.GET
 import retrofit2.http.Path
@@ -25,6 +26,13 @@ interface NetworkInterface {
     ) : Call<ResponseRealtimePosition>
 
     // 지하철 실시간 도착정보(일괄)
+    @Deprecated("사용 안함")
     @GET("json/realtimeStationArrival/ALL")
     fun getRealtimePositionAllInfo() : Call<ResponseRealtimeStationArrival>
+
+    // SpringBoot 서버 API 호출 - 지하철 실시간 도착정보(역이름)
+    @GET("train/arrival/{stationName}")
+    fun getSpringArrivalInfoToStationName(
+        @Path("stationName") stationName: String
+    ) : Call<ResponseSpringArrivalInfoToStationName>
 }

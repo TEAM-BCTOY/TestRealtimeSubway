@@ -1,5 +1,6 @@
 package com.team_bctoy.testrealtimesubway.scene
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,8 +11,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material3.Button
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -19,32 +21,34 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.team_bctoy.testrealtimesubway.api.data.RealtimeArrivalInfo
 import com.team_bctoy.testrealtimesubway.api.data.toInfo
 import com.team_bctoy.testrealtimesubway.api.data.toInfoString
 import com.team_bctoy.testrealtimesubway.ui.theme.TestRealtimeSubwayTheme
-import com.team_bctoy.testrealtimesubway.utils.LogUtil
+import kotlinx.coroutines.launch
 
 @Composable
 fun ApiSelector(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    sbHost: SnackbarHostState? = null
 ) {
     val apiViewModel: ApiSelectorViewModel = viewModel()
     val realtimeArrivalList by apiViewModel.realtimeArrival.collectAsState()
     val realtimePosition by apiViewModel.realtimePosition.collectAsState()
+    val realtimeArrivalToStationName by apiViewModel.springRealtimeArrival.collectAsState()
     var inputSubwayName by remember { mutableStateOf("") }
     var inputSubwayLineName by remember { mutableStateOf("") }
+    val scope = rememberCoroutineScope()
 
     Column(
         modifier = modifier
@@ -63,33 +67,26 @@ fun ApiSelector(
             modifier = Modifier.padding(vertical = 8.dp),
         ) {
             Text(
-                text = "1. 서울시 지하철 실시간 도착정보 API\n    - 역 기준 정보 제공",
+                text = "1. 서울시 지하철 실시간 도착정보 API\n\t- 역 기준 정보 제공",
                 modifier = Modifier.padding(vertical = 4.dp)
             )
             Text(
-                text = "2. 서울시 지하철 실시간 열차 위치정보",
+                text = "2. 서울시 지하철 실시간 도착정보 API(SpringBoot)\n\t - 역 기준 정보 제공",
                 modifier = Modifier.padding(vertical = 4.dp)
             )
             Text(
-                text = "3. 서울시 지하철 실시간 도착정보(일괄) API\n    - 전체 역에 대한 정보 제공",
+                text = "3. 서울시 지하철 실시간 열차 위치정보",
                 modifier = Modifier.padding(top = 4.dp)
-            )
-            Text(
-                text = "- 테스트 결과, 조회시간이 오래걸려\n사용하지 않을 듯 보임",
-                textDecoration = TextDecoration.Underline,
-                color = Color.Red,
-                modifier = Modifier.padding(start = 16.dp)
             )
         }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Absolute.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
+            horizontalArrangement = Arrangement.Absolute.SpaceEvenly
         ) {
             Column(
                 modifier = Modifier
-                    .weight(1f)
+                    .weight(2f)
                     .padding(4.dp)
             ) {
                 TextField(
@@ -102,12 +99,30 @@ fun ApiSelector(
                     },
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
-                DefaultButton(
-                    onClick = {
-                        apiViewModel.callRealtimeSubwayArrival(inputSubwayName)
-                    },
-                    buttonText = "실시간\n도착정보",
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    DefaultButton(
+                        onClick = {
+                            scope.launch {
+                                sbHost?.showSnackbar("서울시 API 에서 가져옴")
+                            }
+                            apiViewModel.callRealtimeSubwayArrival(inputSubwayName)
+                        },
+                        buttonText = "실시간\n도착정보",
+                        modifier = Modifier.padding(end = 2.dp)
+                    )
+                    DefaultButton(
+                        onClick = {
+                            scope.launch {
+                                sbHost?.showSnackbar("테스트서버 API 에서 가져옴")
+                            }
+                            apiViewModel.callRealtimeArrivalToStationName(inputSubwayName)
+                        },
+                        buttonText = "실시간\n도착정보(spring)",
+                        modifier = Modifier.padding(start = 2.dp)
+                    )
+                }
             }
             Column(
                 modifier = Modifier
@@ -127,20 +142,14 @@ fun ApiSelector(
 
                 DefaultButton(
                     onClick = {
+                        scope.launch {
+                            sbHost?.showSnackbar("서울시 API 에서 가져옴")
+                        }
                         apiViewModel.callRealtimePosition(inputSubwayLineName)
                     },
                     buttonText = "실시간 열차\n위치정보",
                 )
             }
-            DefaultButton(
-                onClick = {
-                    apiViewModel.callRealtimeArrivalAll()
-                },
-                buttonText = "실시간\n도착정보\n(일괄)",
-                modifier = Modifier
-                    .weight(1f)
-                    .padding(4.dp)
-            )
         }
         if(realtimeArrivalList.isNotEmpty()) {
             LazyColumn(
@@ -153,7 +162,7 @@ fun ApiSelector(
                     TrackingTrain(info = item.toInfo())
                 }
             }
-        } else {
+        } else if(realtimePosition.isNotEmpty()) {
             LazyColumn(
                 modifier = Modifier
                     .padding(16.dp)
@@ -165,6 +174,17 @@ fun ApiSelector(
                     Text(
                         text = item.toInfoString()
                     )
+                }
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .padding(16.dp)
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                items(realtimeArrivalToStationName) { item ->
+                    TrackingTrain(info = item.toInfo())
                 }
             }
         }

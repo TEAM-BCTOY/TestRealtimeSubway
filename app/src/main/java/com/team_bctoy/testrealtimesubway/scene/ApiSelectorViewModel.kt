@@ -3,10 +3,12 @@ package com.team_bctoy.testrealtimesubway.scene
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.team_bctoy.testrealtimesubway.api.NetworkClient
+import com.team_bctoy.testrealtimesubway.api.data.ArrivalInfo
 import com.team_bctoy.testrealtimesubway.api.data.RealtimeArrival
 import com.team_bctoy.testrealtimesubway.api.data.RealtimePosition
 import com.team_bctoy.testrealtimesubway.api.data.ResponseRealtimePosition
 import com.team_bctoy.testrealtimesubway.api.data.ResponseRealtimeStationArrival
+import com.team_bctoy.testrealtimesubway.api.data.ResponseSpringArrivalInfoToStationName
 import com.team_bctoy.testrealtimesubway.utils.LogUtil
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,10 +24,14 @@ class ApiSelectorViewModel : ViewModel() {
     private val _realtimePositionList = MutableStateFlow<List<RealtimePosition>>(emptyList())
     val realtimePosition: StateFlow<List<RealtimePosition>> get() = _realtimePositionList
 
+    private val _springRealtimeArrival = MutableStateFlow<List<ArrivalInfo>>(emptyList())
+    val springRealtimeArrival: StateFlow<List<ArrivalInfo>> get() = _springRealtimeArrival
+
     // 지하철 실시간 도착정보 API 호출
     fun callRealtimeSubwayArrival(stationName: String) {
         _realtimeArrivalList.value = emptyList()
         _realtimePositionList.value = emptyList()
+        _springRealtimeArrival.value = emptyList()
         NetworkClient.getApiInstance().getRealtimeSubwayArrivalInfo(0, 10, stationName).enqueue(object : Callback<ResponseRealtimeStationArrival> {
             override fun onResponse(
                 call: Call<ResponseRealtimeStationArrival>,
@@ -54,6 +60,7 @@ class ApiSelectorViewModel : ViewModel() {
     fun callRealtimePosition(subwayLineName: String) {
         _realtimeArrivalList.value = emptyList()
         _realtimePositionList.value = emptyList()
+        _springRealtimeArrival.value = emptyList()
         NetworkClient.getApiInstance().getRealtimePositionInfo(0, 10, subwayLineName).enqueue(object : Callback<ResponseRealtimePosition> {
             override fun onResponse(
                 call: Call<ResponseRealtimePosition>,
@@ -79,9 +86,11 @@ class ApiSelectorViewModel : ViewModel() {
     }
 
     // 지하철 실시간 도착정보 일괄 API 호출
+    @Deprecated("사용 안함")
     fun callRealtimeArrivalAll() {
         _realtimeArrivalList.value = emptyList()
         _realtimePositionList.value = emptyList()
+        _springRealtimeArrival.value = emptyList()
         NetworkClient.getApiInstance().getRealtimePositionAllInfo().enqueue(object : Callback<ResponseRealtimeStationArrival> {
             override fun onResponse(
                 call: Call<ResponseRealtimeStationArrival>,
@@ -100,6 +109,37 @@ class ApiSelectorViewModel : ViewModel() {
             }
 
             override fun onFailure(call: Call<ResponseRealtimeStationArrival>, tr: Throwable) {
+                call.cancel()
+                LogUtil.e("Error :: ", tr)
+            }
+        })
+    }
+
+    /**
+     * Spring 서버 지하철 실시간 도착정보(역이름 조회) API 호출
+     */
+    fun callRealtimeArrivalToStationName(stationName: String) {
+        _realtimeArrivalList.value = emptyList()
+        _realtimePositionList.value = emptyList()
+        _springRealtimeArrival.value = emptyList()
+        NetworkClient.getSpringApiInstance().getSpringArrivalInfoToStationName(stationName).enqueue(object : Callback<ResponseSpringArrivalInfoToStationName> {
+            override fun onResponse(
+                call: Call<ResponseSpringArrivalInfoToStationName>,
+                response: Response<ResponseSpringArrivalInfoToStationName>
+            ) {
+                if(response.isSuccessful) {
+                    val arrivals = response.body()?.realtimeArrivalList ?: emptyList()
+                    viewModelScope.launch {
+                        _springRealtimeArrival.value = arrivals
+                    }
+                } else {
+                    viewModelScope.launch {
+                        _springRealtimeArrival.value = emptyList()
+                    }
+                }
+            }
+
+            override fun onFailure(call: Call<ResponseSpringArrivalInfoToStationName>, tr: Throwable) {
                 call.cancel()
                 LogUtil.e("Error :: ", tr)
             }

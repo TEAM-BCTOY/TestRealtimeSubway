@@ -1,4 +1,4 @@
-package com.team_bctoy.testrealtimesubway.scene
+package com.team_bctoy.testrealtimesubway.ui.scene
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope

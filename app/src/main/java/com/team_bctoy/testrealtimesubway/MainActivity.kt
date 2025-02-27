@@ -13,7 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.team_bctoy.testrealtimesubway.scene.ApiSelector
+import com.team_bctoy.testrealtimesubway.ui.scene.ApiSelector
 import com.team_bctoy.testrealtimesubway.ui.theme.TestRealtimeSubwayTheme
 
 class MainActivity : ComponentActivity() {

@@ -1,16 +1,15 @@
-package com.team_bctoy.testrealtimesubway.scene
+package com.team_bctoy.testrealtimesubway.ui.scene
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Button
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -23,17 +22,18 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.team_bctoy.testrealtimesubway.api.data.toInfo
+import com.team_bctoy.testrealtimesubway.ui.component.DefaultButton
+import com.team_bctoy.testrealtimesubway.ui.data.Line7
 import com.team_bctoy.testrealtimesubway.ui.theme.TestRealtimeSubwayTheme
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun ApiSelector(
     modifier: Modifier = Modifier,
@@ -125,8 +125,9 @@ fun ApiSelector(
 
                 DefaultButton(
                     onClick = {
+                        val snackbarText = if(inputSubwayLineName.contains("7")) "7호선 테스트 화면" else "다른호선은 텍스트로만 보입니다."
                         scope.launch {
-                            sbHost?.showSnackbar("테스트서버 API 에서 가져옴")
+                            sbHost?.showSnackbar(snackbarText)
                         }
                         apiViewModel.callRealtimePosition(inputSubwayLineName)
                     },
@@ -134,7 +135,7 @@ fun ApiSelector(
                 )
             }
         }
-        if(realtimeArrivalList.isNotEmpty()) {
+        if (realtimeArrivalList.isNotEmpty()) {
             LazyColumn(
                 modifier = Modifier
                     .padding(16.dp)
@@ -146,84 +147,32 @@ fun ApiSelector(
                 }
             }
         } else {
-            LazyColumn(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .weight(1f)
-                    .fillMaxWidth(),
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                items(realtimePosition) { item ->
-                    Text(
-                        text = item.toString()
-                    )
+            if (inputSubwayLineName.contains("7")) {
+                FlowRow(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    Line7().list.forEach { item ->
+                        TrainLinePosition(
+                            lineData = item,
+                            isFirst = Line7().list.indexOf(item) == 0
+                        )
+                    }
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun DefaultButton(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-    buttonText: String
-) {
-    Button(
-        onClick = onClick,
-        modifier = modifier
-    ) {
-        Text(
-            text = buttonText,
-            textAlign = TextAlign.Center
-        )
-    }
-}
-
-@Composable
-fun TrackingTrain(
-    modifier: Modifier = Modifier,
-    info: RealtimeArrivalInfo
-) {
-    with(info) {
-        Column(
-            modifier = modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = "$destinationAndDirection $trainKind 열차",
-                fontWeight = FontWeight.Bold,
-                fontSize = 24.sp,
-                modifier = Modifier.padding(bottom = 16.dp)
-            )
-            Box(
-                modifier = Modifier
-                    .background(Color.Cyan)
-                    .padding(24.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Column(
+            } else {
+                LazyColumn(
+                    modifier = Modifier
+                        .padding(16.dp)
+                        .weight(1f)
+                        .fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text(
-                        text = beforeInfo,
-                        fontWeight = FontWeight.Bold
-                    )
-                    if(isLast) {
+                    items(realtimePosition) { item ->
                         Text(
-                            text = "막차입니다!!",
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
-                            color = Color.Red,
+                            text = item.toString()
                         )
                     }
                 }
             }
-            Text(
-                text = arrivalCode,
-                modifier = Modifier.padding(8.dp)
-            )
         }
     }
 }
@@ -234,36 +183,4 @@ fun PreviewApiSelector() {
     TestRealtimeSubwayTheme {
         ApiSelector()
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewTrackingTrainIsLast() {
-    val mock = RealtimeArrivalInfo(
-        searchStation = "부천",
-        upAndDown = "상행",
-        destinationAndDirection = "의정부 - 소사방면",
-        trainKind = "일반",
-        beforeInfo = "[3]번째 전역",
-        nowSubwayStationName = "부개",
-        arrivalCode = "운행중",
-        isLast = true
-    )
-    TrackingTrain(info = mock)
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewTrackingTrainIsNotLast() {
-    val mock = RealtimeArrivalInfo(
-        searchStation = "부천",
-        upAndDown = "상행",
-        destinationAndDirection = "의정부 - 소사방면",
-        trainKind = "일반",
-        beforeInfo = "[3]번째 전역",
-        nowSubwayStationName = "부개",
-        arrivalCode = "운행중",
-        isLast = false
-    )
-    TrackingTrain(info = mock)
 }

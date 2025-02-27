@@ -1,6 +1,6 @@
 package com.team_bctoy.testrealtimesubway.api.data
 
-import com.team_bctoy.testrealtimesubway.scene.RealtimeArrivalInfo
+import com.team_bctoy.testrealtimesubway.ui.data.RealtimeArrivalInfo
 import com.team_bctoy.testrealtimesubway.utils.toArrivalCode
 
 data class RealtimeStationArrival(

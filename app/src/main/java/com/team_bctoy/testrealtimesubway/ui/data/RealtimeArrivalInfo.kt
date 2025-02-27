@@ -1,4 +1,4 @@
-package com.team_bctoy.testrealtimesubway.scene
+package com.team_bctoy.testrealtimesubway.ui.data
 
 /**
  * 화면에 쓰이는 데이터

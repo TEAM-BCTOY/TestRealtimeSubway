@@ -21,8 +21,8 @@ android {
         val properties = Properties()
         properties.load(localPropFiles.inputStream())
 
-        val authorizationKey = properties.getProperty("AuthorizationKey")
-        buildConfigField("String", "AUTH_KEY", authorizationKey)
+        val authorizationKey = properties.getProperty("TEST_URL")
+        buildConfigField("String", "TEST_URL", authorizationKey)
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {

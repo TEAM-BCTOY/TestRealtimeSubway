@@ -4,11 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.team_bctoy.testrealtimesubway.api.NetworkClient
 import com.team_bctoy.testrealtimesubway.api.data.ArrivalInfo
-import com.team_bctoy.testrealtimesubway.api.data.RealtimeArrival
-import com.team_bctoy.testrealtimesubway.api.data.RealtimePosition
-import com.team_bctoy.testrealtimesubway.api.data.ResponseRealtimePosition
-import com.team_bctoy.testrealtimesubway.api.data.ResponseRealtimeStationArrival
-import com.team_bctoy.testrealtimesubway.api.data.ResponseSpringArrivalInfoToStationName
+import com.team_bctoy.testrealtimesubway.api.data.PositionInfo
+import com.team_bctoy.testrealtimesubway.api.data.RealtimeStationArrival
+import com.team_bctoy.testrealtimesubway.api.data.RealtimeStationPosition
 import com.team_bctoy.testrealtimesubway.utils.LogUtil
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,24 +16,22 @@ import retrofit2.Callback
 import retrofit2.Response
 
 class ApiSelectorViewModel : ViewModel() {
-    private val _realtimeArrivalList = MutableStateFlow<List<RealtimeArrival>>(emptyList())
-    val realtimeArrival: StateFlow<List<RealtimeArrival>> get() = _realtimeArrivalList
+    private val _realtimeArrivalList = MutableStateFlow<List<ArrivalInfo>>(emptyList())
+    val realtimeArrival: StateFlow<List<ArrivalInfo>> get() = _realtimeArrivalList
 
-    private val _realtimePositionList = MutableStateFlow<List<RealtimePosition>>(emptyList())
-    val realtimePosition: StateFlow<List<RealtimePosition>> get() = _realtimePositionList
+    private val _realtimePositionList = MutableStateFlow<List<PositionInfo>>(emptyList())
+    val realtimePosition: StateFlow<List<PositionInfo>> get() = _realtimePositionList
 
-    private val _springRealtimeArrival = MutableStateFlow<List<ArrivalInfo>>(emptyList())
-    val springRealtimeArrival: StateFlow<List<ArrivalInfo>> get() = _springRealtimeArrival
-
-    // 지하철 실시간 도착정보 API 호출
+    /**
+     * 지하철 실시간 도착정보(역이름 조회) API 호출
+     */
     fun callRealtimeSubwayArrival(stationName: String) {
         _realtimeArrivalList.value = emptyList()
         _realtimePositionList.value = emptyList()
-        _springRealtimeArrival.value = emptyList()
-        NetworkClient.getApiInstance().getRealtimeSubwayArrivalInfo(0, 10, stationName).enqueue(object : Callback<ResponseRealtimeStationArrival> {
+        NetworkClient.getApiInstance().getRealtimeSubwayArrivalInfo(stationName).enqueue(object : Callback<RealtimeStationArrival> {
             override fun onResponse(
-                call: Call<ResponseRealtimeStationArrival>,
-                response: Response<ResponseRealtimeStationArrival>
+                call: Call<RealtimeStationArrival>,
+                response: Response<RealtimeStationArrival>
             ) {
                 if(response.isSuccessful) {
                     val arrivals = response.body()?.realtimeArrivalList ?: emptyList()
@@ -49,7 +45,7 @@ class ApiSelectorViewModel : ViewModel() {
                 }
             }
 
-            override fun onFailure(call: Call<ResponseRealtimeStationArrival>, tr: Throwable) {
+            override fun onFailure(call: Call<RealtimeStationArrival>, tr: Throwable) {
                 call.cancel()
                 LogUtil.e("Error :: ", tr)
             }
@@ -60,11 +56,11 @@ class ApiSelectorViewModel : ViewModel() {
     fun callRealtimePosition(subwayLineName: String) {
         _realtimeArrivalList.value = emptyList()
         _realtimePositionList.value = emptyList()
-        _springRealtimeArrival.value = emptyList()
-        NetworkClient.getApiInstance().getRealtimePositionInfo(0, 10, subwayLineName).enqueue(object : Callback<ResponseRealtimePosition> {
+        val request = if(subwayLineName.contains("호선")) subwayLineName else "${subwayLineName}호선"
+        NetworkClient.getApiInstance().getRealtimeSubwayPositionInfo(request).enqueue(object : Callback<RealtimeStationPosition> {
             override fun onResponse(
-                call: Call<ResponseRealtimePosition>,
-                response: Response<ResponseRealtimePosition>
+                call: Call<RealtimeStationPosition>,
+                response: Response<RealtimeStationPosition>
             ) {
                 if(response.isSuccessful) {
                     val positions = response.body()?.realtimePositionList ?: emptyList()
@@ -78,68 +74,7 @@ class ApiSelectorViewModel : ViewModel() {
                 }
             }
 
-            override fun onFailure(call: Call<ResponseRealtimePosition>, tr: Throwable) {
-                call.cancel()
-                LogUtil.e("Error :: ", tr)
-            }
-        })
-    }
-
-    // 지하철 실시간 도착정보 일괄 API 호출
-    @Deprecated("사용 안함")
-    fun callRealtimeArrivalAll() {
-        _realtimeArrivalList.value = emptyList()
-        _realtimePositionList.value = emptyList()
-        _springRealtimeArrival.value = emptyList()
-        NetworkClient.getApiInstance().getRealtimePositionAllInfo().enqueue(object : Callback<ResponseRealtimeStationArrival> {
-            override fun onResponse(
-                call: Call<ResponseRealtimeStationArrival>,
-                response: Response<ResponseRealtimeStationArrival>
-            ) {
-                if(response.isSuccessful) {
-                    val arrivals = response.body()?.realtimeArrivalList ?: emptyList()
-                    viewModelScope.launch {
-                        _realtimeArrivalList.value = arrivals
-                    }
-                } else {
-                    viewModelScope.launch {
-                        _realtimeArrivalList.value = emptyList()
-                    }
-                }
-            }
-
-            override fun onFailure(call: Call<ResponseRealtimeStationArrival>, tr: Throwable) {
-                call.cancel()
-                LogUtil.e("Error :: ", tr)
-            }
-        })
-    }
-
-    /**
-     * Spring 서버 지하철 실시간 도착정보(역이름 조회) API 호출
-     */
-    fun callRealtimeArrivalToStationName(stationName: String) {
-        _realtimeArrivalList.value = emptyList()
-        _realtimePositionList.value = emptyList()
-        _springRealtimeArrival.value = emptyList()
-        NetworkClient.getSpringApiInstance().getSpringArrivalInfoToStationName(stationName).enqueue(object : Callback<ResponseSpringArrivalInfoToStationName> {
-            override fun onResponse(
-                call: Call<ResponseSpringArrivalInfoToStationName>,
-                response: Response<ResponseSpringArrivalInfoToStationName>
-            ) {
-                if(response.isSuccessful) {
-                    val arrivals = response.body()?.realtimeArrivalList ?: emptyList()
-                    viewModelScope.launch {
-                        _springRealtimeArrival.value = arrivals
-                    }
-                } else {
-                    viewModelScope.launch {
-                        _springRealtimeArrival.value = emptyList()
-                    }
-                }
-            }
-
-            override fun onFailure(call: Call<ResponseSpringArrivalInfoToStationName>, tr: Throwable) {
+            override fun onFailure(call: Call<RealtimeStationPosition>, tr: Throwable) {
                 call.cancel()
                 LogUtil.e("Error :: ", tr)
             }

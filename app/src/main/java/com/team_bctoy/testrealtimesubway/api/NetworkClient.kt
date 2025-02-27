@@ -12,7 +12,6 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object NetworkClient {
-    val authKey = BuildConfig.AUTH_KEY
     class PrettyJsonLogger : HttpLoggingInterceptor.Logger {
         private val gson = GsonBuilder().setPrettyPrinting().create()
         override fun log(message: String) {
@@ -41,7 +40,7 @@ object NetworkClient {
         .build()
 
     private val retrofit = Retrofit.Builder()
-        .baseUrl("http://swopenAPI.seoul.go.kr/api/subway/$authKey/")
+        .baseUrl(BuildConfig.TEST_URL)
         .addConverterFactory(GsonConverterFactory.create())
         .client(apiClient)
         .build()
@@ -49,19 +48,4 @@ object NetworkClient {
     fun getApiInstance() : NetworkInterface {
         return retrofit.create(NetworkInterface::class.java)
     }
-
-    private val testApiClient = OkHttpClient().newBuilder()
-        .addNetworkInterceptor(interceptor)
-        .build()
-
-    private val testRetrofit = Retrofit.Builder()
-        .baseUrl("http://jitb.synology.me:6000/api/")
-        .addConverterFactory(GsonConverterFactory.create())
-        .client(testApiClient)
-        .build()
-
-    fun getSpringApiInstance() : NetworkInterface {
-        return testRetrofit.create(NetworkInterface::class.java)
-    }
-
 }

@@ -1,6 +1,5 @@
 package com.team_bctoy.testrealtimesubway.scene
 
-import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -33,7 +31,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.team_bctoy.testrealtimesubway.api.data.toInfo
-import com.team_bctoy.testrealtimesubway.api.data.toInfoString
 import com.team_bctoy.testrealtimesubway.ui.theme.TestRealtimeSubwayTheme
 import kotlinx.coroutines.launch
 
@@ -45,7 +42,6 @@ fun ApiSelector(
     val apiViewModel: ApiSelectorViewModel = viewModel()
     val realtimeArrivalList by apiViewModel.realtimeArrival.collectAsState()
     val realtimePosition by apiViewModel.realtimePosition.collectAsState()
-    val realtimeArrivalToStationName by apiViewModel.springRealtimeArrival.collectAsState()
     var inputSubwayName by remember { mutableStateOf("") }
     var inputSubwayLineName by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
@@ -71,23 +67,19 @@ fun ApiSelector(
                 modifier = Modifier.padding(vertical = 4.dp)
             )
             Text(
-                text = "2. 서울시 지하철 실시간 도착정보 API(SpringBoot)\n\t - 역 기준 정보 제공",
+                text = "2. 서울시 지하철 실시간 열차 위치정보\n\t- 호선 기준 정보 제공",
                 modifier = Modifier.padding(vertical = 4.dp)
-            )
-            Text(
-                text = "3. 서울시 지하철 실시간 열차 위치정보",
-                modifier = Modifier.padding(top = 4.dp)
             )
         }
 
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Absolute.SpaceEvenly
         ) {
             Column(
                 modifier = Modifier
-                    .weight(2f)
-                    .padding(4.dp)
+                    .weight(1f)
+                    .padding(4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 TextField(
                     value = inputSubwayName,
@@ -105,21 +97,11 @@ fun ApiSelector(
                     DefaultButton(
                         onClick = {
                             scope.launch {
-                                sbHost?.showSnackbar("서울시 API 에서 가져옴")
+                                sbHost?.showSnackbar("테스트서버 API 에서 가져옴")
                             }
                             apiViewModel.callRealtimeSubwayArrival(inputSubwayName)
                         },
                         buttonText = "실시간\n도착정보",
-                        modifier = Modifier.padding(end = 2.dp)
-                    )
-                    DefaultButton(
-                        onClick = {
-                            scope.launch {
-                                sbHost?.showSnackbar("테스트서버 API 에서 가져옴")
-                            }
-                            apiViewModel.callRealtimeArrivalToStationName(inputSubwayName)
-                        },
-                        buttonText = "실시간\n도착정보(spring)",
                         modifier = Modifier.padding(start = 2.dp)
                     )
                 }
@@ -127,7 +109,8 @@ fun ApiSelector(
             Column(
                 modifier = Modifier
                     .weight(1f)
-                    .padding(4.dp)
+                    .padding(4.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 TextField(
                     value = inputSubwayLineName,
@@ -143,7 +126,7 @@ fun ApiSelector(
                 DefaultButton(
                     onClick = {
                         scope.launch {
-                            sbHost?.showSnackbar("서울시 API 에서 가져옴")
+                            sbHost?.showSnackbar("테스트서버 API 에서 가져옴")
                         }
                         apiViewModel.callRealtimePosition(inputSubwayLineName)
                     },
@@ -162,7 +145,7 @@ fun ApiSelector(
                     TrackingTrain(info = item.toInfo())
                 }
             }
-        } else if(realtimePosition.isNotEmpty()) {
+        } else {
             LazyColumn(
                 modifier = Modifier
                     .padding(16.dp)
@@ -172,19 +155,8 @@ fun ApiSelector(
             ) {
                 items(realtimePosition) { item ->
                     Text(
-                        text = item.toInfoString()
+                        text = item.toString()
                     )
-                }
-            }
-        } else {
-            LazyColumn(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .weight(1f)
-                    .fillMaxWidth()
-            ) {
-                items(realtimeArrivalToStationName) { item ->
-                    TrackingTrain(info = item.toInfo())
                 }
             }
         }

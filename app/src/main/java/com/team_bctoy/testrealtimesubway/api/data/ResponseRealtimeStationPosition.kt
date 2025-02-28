@@ -1,5 +1,14 @@
 package com.team_bctoy.testrealtimesubway.api.data
 
+const val express = "1"
+const val nonExpress = "0"
+const val sExpress = "7"
+
+const val enter = "0"
+const val arrive = "1"
+const val departure = "2"
+const val beforeDeparture = "3"
+
 data class RealtimeStationPosition(
     val realtimePositionList: List<PositionInfo>
 )

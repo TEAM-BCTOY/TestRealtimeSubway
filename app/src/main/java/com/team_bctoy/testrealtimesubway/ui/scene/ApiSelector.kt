@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -29,8 +30,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.team_bctoy.testrealtimesubway.api.data.toInfo
 import com.team_bctoy.testrealtimesubway.ui.component.DefaultButton
-import com.team_bctoy.testrealtimesubway.ui.data.Line7
 import com.team_bctoy.testrealtimesubway.ui.theme.TestRealtimeSubwayTheme
+import com.team_bctoy.testrealtimesubway.utils.toSubwayLine
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -41,7 +42,7 @@ fun ApiSelector(
 ) {
     val apiViewModel: ApiSelectorViewModel = viewModel()
     val realtimeArrivalList by apiViewModel.realtimeArrival.collectAsState()
-    val realtimePosition by apiViewModel.realtimePosition.collectAsState()
+    val realtimePositionList by apiViewModel.realtimePosition.collectAsState()
     var inputSubwayName by remember { mutableStateOf("") }
     var inputSubwayLineName by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
@@ -146,19 +147,9 @@ fun ApiSelector(
                     TrackingTrain(info = item.toInfo())
                 }
             }
-        } else {
-            if (inputSubwayLineName.contains("7")) {
-                FlowRow(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    Line7().list.forEach { item ->
-                        TrainLinePosition(
-                            lineData = item,
-                            isFirst = Line7().list.indexOf(item) == 0
-                        )
-                    }
-                }
-            } else {
+        } else if(realtimePositionList.isNotEmpty()) {
+            val isMock = realtimePositionList[0].subwayNm.toSubwayLine() == null
+            if(isMock) { // 비어있다면, 텍스트만 그리기
                 LazyColumn(
                     modifier = Modifier
                         .padding(16.dp)
@@ -166,13 +157,30 @@ fun ApiSelector(
                         .fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    items(realtimePosition) { item ->
+                    items(realtimePositionList) { item ->
                         Text(
                             text = item.toString()
                         )
                     }
                 }
+            } else { // 비어있지 않다면, 목업용 7호선 노선도 그리기
+                FlowRow(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    val stationList = realtimePositionList[0].subwayNm.toSubwayLine()
+                    stationList!!.forEachIndexed { idx, station ->
+                        val item = realtimePositionList.find { it.statnNm == station.name }
+                        val isFirst = idx == 0
+                        val destinationIdx = stationList.indexOf(stationList.find { it.name == item?.statnTnm })
+                        val nowPosIdx = stationList.indexOf(stationList.find { it.name == item?.statnNm })
+                        val isLeft = destinationIdx < nowPosIdx
+                        station.positionInfo = item
+                        TrainLinePosition(station, isFirst, isLeft)
+                    }
+                }
             }
+        } else {
+            Spacer(modifier = Modifier.weight(1f))
         }
     }
 }

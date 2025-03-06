@@ -1,16 +1,18 @@
 package com.team_bctoy.testrealtimesubway.ui.scene
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -46,6 +48,9 @@ fun ApiSelector(
     var inputSubwayName by remember { mutableStateOf("") }
     var inputSubwayLineName by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
+
+    val clickPosition by apiViewModel.clickStation.collectAsState()
 
     Column(
         modifier = modifier
@@ -136,51 +141,69 @@ fun ApiSelector(
                 )
             }
         }
-        if (realtimeArrivalList.isNotEmpty()) {
-            LazyColumn(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .weight(1f)
-                    .fillMaxWidth()
-            ) {
-                items(realtimeArrivalList) { item ->
-                    TrackingTrain(info = item.toInfo())
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .padding(16.dp)
+                .fillMaxWidth()
+                .verticalScroll(scrollState)
+        ) {
+            if (realtimeArrivalList.isNotEmpty()) {
+                LazyColumn() {
+                    items(realtimeArrivalList) { item ->
+                        TrackingTrain(info = item.toInfo())
+                    }
                 }
-            }
-        } else if(realtimePositionList.isNotEmpty()) {
-            val isMock = realtimePositionList[0].subwayNm.toSubwayLine() == null
-            if(isMock) { // 비어있다면, 텍스트만 그리기
-                LazyColumn(
-                    modifier = Modifier
-                        .padding(16.dp)
-                        .weight(1f)
-                        .fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    items(realtimePositionList) { item ->
-                        Text(
-                            text = item.toString()
+            } else if(realtimePositionList.isNotEmpty()) {
+                val isMock = realtimePositionList[0].subwayNm.toSubwayLine() == null
+                if(isMock) { // 비어있다면, 텍스트만 그리기
+                    LazyColumn(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        items(realtimePositionList) { item ->
+                            Text(
+                                text = item.toString()
+                            )
+                        }
+                    }
+                } else { // 비어있지 않다면, 목업용 7호선 노선도 그리기
+                    val stationList = realtimePositionList[0].subwayNm.toSubwayLine()
+                    FlowRow {
+                        stationList!!.forEachIndexed { idx, station ->
+                            val item = realtimePositionList.find { it.statnNm == station.name }
+                            val isFirst = idx == 0
+                            val destinationIdx = stationList.indexOf(stationList.find { it.name == item?.statnTnm })
+                            val nowPosIdx = stationList.indexOf(stationList.find { it.name == item?.statnNm })
+                            val isLeft = destinationIdx < nowPosIdx
+                            station.positionInfo = item
+                            TrainLinePosition(
+                                lineData = station,
+                                isFirst = isFirst,
+                                isLeft = isLeft,
+                                viewModel = apiViewModel
+                            )
+                        }
+                    }
+
+                    if(clickPosition != "") {
+                        val currentIndex = stationList!!.indexOf(stationList.find{ it.name == clickPosition })
+                        NowStationBottomSheet(
+                            viewModel = apiViewModel,
+                            beforeStation = if (currentIndex != 0) {
+                                stationList[currentIndex - 1].name
+                            } else {
+                                ""
+                            },
+                            nextStation = if(currentIndex != stationList.size - 1) {
+                                stationList[currentIndex + 1].name
+                            } else {
+                                ""
+                            },
+                            clickPosition = clickPosition
                         )
                     }
                 }
-            } else { // 비어있지 않다면, 목업용 7호선 노선도 그리기
-                FlowRow(
-                    modifier = Modifier.fillMaxSize()
-                ) {
-                    val stationList = realtimePositionList[0].subwayNm.toSubwayLine()
-                    stationList!!.forEachIndexed { idx, station ->
-                        val item = realtimePositionList.find { it.statnNm == station.name }
-                        val isFirst = idx == 0
-                        val destinationIdx = stationList.indexOf(stationList.find { it.name == item?.statnTnm })
-                        val nowPosIdx = stationList.indexOf(stationList.find { it.name == item?.statnNm })
-                        val isLeft = destinationIdx < nowPosIdx
-                        station.positionInfo = item
-                        TrainLinePosition(station, isFirst, isLeft)
-                    }
-                }
             }
-        } else {
-            Spacer(modifier = Modifier.weight(1f))
         }
     }
 }

@@ -2,6 +2,7 @@ package com.team_bctoy.testrealtimesubway.ui.scene
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,9 +51,18 @@ import com.team_bctoy.testrealtimesubway.ui.data.mock7
  */
 
 @Composable
-fun TrainLinePosition(lineData: LineData, isFirst: Boolean, isLeft: Boolean) {
+fun TrainLinePosition(
+    lineData: LineData,
+    isFirst: Boolean,
+    isLeft: Boolean,
+    viewModel: ApiSelectorViewModel? = null
+) {
     Column(
-        modifier = Modifier.padding(vertical = 2.dp)
+        modifier = Modifier
+            .padding(vertical = 2.dp)
+            .clickable {
+                viewModel?.setClickStation(lineData.name)
+            }
     ) {
         Row(
             horizontalArrangement = Arrangement.spacedBy(4.dp),
@@ -77,8 +87,9 @@ fun TrainLinePosition(lineData: LineData, isFirst: Boolean, isLeft: Boolean) {
                         Image(
                             painter = painterResource(id = R.drawable.ic_train),
                             contentDescription = null,
-                            modifier = Modifier.padding(start = 2.dp)
-                                .graphicsLayer(scaleX = if(isLeft) 1f else -1f)
+                            modifier = Modifier
+                                .padding(start = 2.dp)
+                                .graphicsLayer(scaleX = if (isLeft) 1f else -1f)
                         )
                     }
                 }
@@ -105,8 +116,9 @@ fun TrainLinePosition(lineData: LineData, isFirst: Boolean, isLeft: Boolean) {
                     Image(
                         painter = painterResource(id = R.drawable.ic_train),
                         contentDescription = null,
-                        modifier = Modifier.size(24.dp)
-                            .graphicsLayer(scaleX = if(isLeft) 1f else -1f)
+                        modifier = Modifier
+                            .size(24.dp)
+                            .graphicsLayer(scaleX = if (isLeft) 1f else -1f)
                     )
                 } else {
                     Spacer(modifier = Modifier.size(24.dp))
@@ -153,10 +165,24 @@ fun PreviewTransferCard() {
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun PreviewTrainLineSinglePosition() {
+    TrainLinePosition(
+        lineData = LineData(
+            name = "테스트",
+            transfer = null,
+            positionInfo = null
+        ),
+        isFirst = false,
+        isLeft = false
+    )
+}
+
 @OptIn(ExperimentalLayoutApi::class)
 @Preview(showBackground = true)
 @Composable
-fun PreviewTrainLinePosition() {
+fun PreviewTrainLineAllPosition() {
     val mockData = LineList().mock7()
     val mockPositionInfo = listOf(
         PositionInfo(
@@ -188,7 +214,11 @@ fun PreviewTrainLinePosition() {
             val nowPosIdx = mockData.indexOf(mockData.find { it.name == collectPosInfo?.statnNm })
             val isLeft = destinationIdx < nowPosIdx
             item.positionInfo = collectPosInfo
-            TrainLinePosition(item, isFirst, isLeft)
+            TrainLinePosition(
+                lineData = item,
+                isFirst = isFirst,
+                isLeft = isLeft
+            )
         }
     }
 }

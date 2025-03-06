@@ -22,6 +22,9 @@ class ApiSelectorViewModel : ViewModel() {
     private val _realtimePositionList = MutableStateFlow<List<PositionInfo>>(emptyList())
     val realtimePosition: StateFlow<List<PositionInfo>> get() = _realtimePositionList
 
+    private val _clickStation = MutableStateFlow("")
+    val clickStation: StateFlow<String> get() = _clickStation
+
     /**
      * 지하철 실시간 도착정보(역이름 조회) API 호출
      */
@@ -79,5 +82,13 @@ class ApiSelectorViewModel : ViewModel() {
                 LogUtil.e("Error :: ", tr)
             }
         })
+    }
+
+    fun setClickStation(station: String) {
+        _clickStation.value = station
+    }
+
+    fun clearClickStation() {
+        _clickStation.value = ""
     }
 }

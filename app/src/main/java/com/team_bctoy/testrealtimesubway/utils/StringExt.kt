@@ -3,6 +3,7 @@ package com.team_bctoy.testrealtimesubway.utils
 import com.team_bctoy.testrealtimesubway.ui.data.LineData
 import com.team_bctoy.testrealtimesubway.ui.data.LineList
 import com.team_bctoy.testrealtimesubway.ui.data.mock7
+import com.team_bctoy.testrealtimesubway.ui.data.mock8
 
 fun String.toArrivalCode(searchStation: String) : String {
     return when(this) {
@@ -19,7 +20,8 @@ fun String.toArrivalCode(searchStation: String) : String {
 
 fun String.toSubwayLine() : List<LineData>? {
     return when(this) {
-        "7호선" ->{ LineList().mock7() }
+        "7호선" -> { LineList().mock7() }
+        "8호선" -> { LineList().mock8() }
         else -> { null /* TODO : 다른 호선 지하철리스트 추가되면 업데이트 예정 */ }
     }
 }

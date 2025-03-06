@@ -76,6 +76,33 @@ fun LineList.mock7() : List<LineData> = listOf(
     LineData(name = "석남", transfer = listOf(TrainLine.LineInC2)),
 )
 
+fun LineList.mock8() : List<LineData> = listOf(
+    LineData(name = "별내", transfer = listOf(TrainLine.LineGChun)),
+    LineData(name = "다산", transfer = null),
+    LineData(name = "동구릉", transfer = null),
+    LineData(name = "구리", transfer = listOf(TrainLine.LineGCenter)),
+    LineData(name = "정자호수공원", transfer = null),
+    LineData(name = "암사역사공원", transfer = null),
+    LineData(name = "암사", transfer = null),
+    LineData(name = "천호", transfer = listOf(TrainLine.Line5)),
+    LineData(name = "강동구청", transfer = null),
+    LineData(name = "몽촌토성", transfer = null),
+    LineData(name = "잠실", transfer = listOf(TrainLine.Line2)),
+    LineData(name = "석촌", transfer = listOf(TrainLine.Line9)),
+    LineData(name = "송파", transfer = null),
+    LineData(name = "가락시장", transfer = listOf(TrainLine.Line3)),
+    LineData(name = "문정", transfer = null),
+    LineData(name = "장지", transfer = null),
+    LineData(name = "복정", transfer = listOf(TrainLine.LineSB)),
+    LineData(name = "남위례", transfer = null),
+    LineData(name = "산성", transfer = null),
+    LineData(name = "남한산성입구", transfer = null),
+    LineData(name = "단대오거리", transfer = null),
+    LineData(name = "신흥", transfer = null),
+    LineData(name = "수진", transfer = null),
+    LineData(name = "모란", transfer = listOf(TrainLine.LineSB)),
+)
+
 /**
  * 호선 정보
  * @property [name] 역명

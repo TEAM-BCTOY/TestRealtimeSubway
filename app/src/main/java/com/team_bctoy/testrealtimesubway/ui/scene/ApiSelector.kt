@@ -131,7 +131,12 @@ fun ApiSelector(
 
                 DefaultButton(
                     onClick = {
-                        val snackbarText = if(inputSubwayLineName.contains("7")) "7호선 테스트 화면" else "다른호선은 텍스트로만 보입니다."
+                        val snackbarText = if(inputSubwayLineName.contains("7"))
+                            "7호선 테스트 화면"
+                        else if(inputSubwayLineName.contains("8"))
+                            "8호선 테스트 화면"
+                        else
+                            "다른호선은 텍스트로만 보입니다."
                         scope.launch {
                             sbHost?.showSnackbar(snackbarText)
                         }
@@ -185,20 +190,28 @@ fun ApiSelector(
                         }
                     }
 
-                    if(clickPosition != "") {
+                    if(clickPosition != "" && realtimePositionList[0].subwayNm.contains("7")) {
+                        // 선택한 역 index
                         val currentIndex = stationList!!.indexOf(stationList.find{ it.name == clickPosition })
+                        val beforeStation = if (currentIndex != 0) stationList[currentIndex - 1].name else ""
+                        val nextStation = if(currentIndex != stationList.size - 1) stationList[currentIndex + 1].name else ""
+
                         NowStationBottomSheet(
                             viewModel = apiViewModel,
-                            beforeStation = if (currentIndex != 0) {
-                                stationList[currentIndex - 1].name
-                            } else {
-                                ""
-                            },
-                            nextStation = if(currentIndex != stationList.size - 1) {
-                                stationList[currentIndex + 1].name
-                            } else {
-                                ""
-                            },
+                            beforeStation = beforeStation,
+                            nextStation = nextStation,
+                            clickPosition = clickPosition
+                        )
+                    } else if(clickPosition != "" && realtimePositionList[0].subwayNm.contains("8")){
+                        // 선택한 역 index
+                        val currentIndex = stationList!!.indexOf(stationList.find{ it.name == clickPosition })
+                        val beforeStation = if (currentIndex != 0) stationList[currentIndex - 1].name else ""
+                        val nextStation = if(currentIndex != stationList.size - 1) stationList[currentIndex + 1].name else ""
+
+                        NowStationDialog(
+                            viewModel = apiViewModel,
+                            beforeStation = beforeStation,
+                            nextStation = nextStation,
                             clickPosition = clickPosition
                         )
                     }

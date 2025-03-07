@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -151,7 +152,6 @@ fun ApiSelector(
                 .weight(1f)
                 .padding(16.dp)
                 .fillMaxWidth()
-                .verticalScroll(scrollState)
         ) {
             if (realtimeArrivalList.isNotEmpty()) {
                 LazyColumn() {
@@ -163,6 +163,7 @@ fun ApiSelector(
                 val isMock = realtimePositionList[0].subwayNm.toSubwayLine() == null
                 if(isMock) { // 비어있다면, 텍스트만 그리기
                     LazyColumn(
+                        modifier = Modifier.align(Alignment.Center),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         items(realtimePositionList) { item ->
@@ -173,7 +174,9 @@ fun ApiSelector(
                     }
                 } else { // 비어있지 않다면, 목업용 7호선 노선도 그리기
                     val stationList = realtimePositionList[0].subwayNm.toSubwayLine()
-                    FlowRow {
+                    FlowRow(
+                        modifier = Modifier.verticalScroll(scrollState)
+                    ) {
                         stationList!!.forEachIndexed { idx, station ->
                             val item = realtimePositionList.find { it.statnNm == station.name }
                             val isFirst = idx == 0

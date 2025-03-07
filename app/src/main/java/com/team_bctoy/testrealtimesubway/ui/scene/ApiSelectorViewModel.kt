@@ -59,7 +59,7 @@ class ApiSelectorViewModel : ViewModel() {
     fun callRealtimePosition(subwayLineName: String) {
         _realtimeArrivalList.value = emptyList()
         _realtimePositionList.value = emptyList()
-        val request = if(subwayLineName.contains("호선")) subwayLineName else "${subwayLineName}호선"
+        val request = if(subwayLineName.contains("호선") || subwayLineName.contains("선")) subwayLineName else "${subwayLineName}호선"
         NetworkClient.getApiInstance().getRealtimeSubwayPositionInfo(request).enqueue(object : Callback<RealtimeStationPosition> {
             override fun onResponse(
                 call: Call<RealtimeStationPosition>,
